@@ -1,0 +1,33 @@
+* wf01
+
+Watch face for Garmin Forerunner 935 & 945 (and probably others, only tested
+properly on 945).
+
+** Screenshot
+
+[[file:screenshot.png]]
+
+From top to bottom, left to right:
+
+- notifications
+- time (hhmm, 24-hours only)
+- date (ddmm)
+- battery level
+- steps today
+- step goal
+- sunrise (hhmm)
+- sunset (hhmm)
+
+- left side: do not disturb (gray: on, color: off)
+- right side: connection status (gray: disconnected, color: connected)
+
+The color changes every night at 00:00.
+
+** Credits
+
+Includes code for calculating sunrise and sunset from
+[[https://github.com/haraldh]].
+
+The font is
+[[http://www.fonts101.com/fonts/view/Uncategorized/42931/Interstate][Interstate]],
+converted with [[https://github.com/vladimirgamalyan/fontbm]].

@@ -1,0 +1,9 @@
+<resources>
+    <fonts>
+        <!-- font from -->
+        <!-- http://www.fonts101.com/fonts/view/Uncategorized/42931/Interstate, -->
+        <!-- converted with https://github.com/vladimirgamalyan/fontbm: -->
+        <!-- $ ./fontbm \-\-font-file font/interstate/interstate-black.ttf \-\-output font/interstate \-\-font-size 84 -->
+        <font id="id_font_time" filename="fonts/interstate.fnt" filter="0123456789" />
+    </fonts>
+</resources>
