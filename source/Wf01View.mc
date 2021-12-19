@@ -4,6 +4,7 @@ using Toybox.Lang;
 using Toybox.System;
 using Toybox.Time.Gregorian;
 using Toybox.Time;
+using Toybox.Weather;
 using Toybox.WatchUi;
 
 const COLOR_DND = 0xaaaaaa;
@@ -144,35 +145,74 @@ class Wf01View extends WatchUi.WatchFace
     }
 
     function drawSun(dc) {
+        var loc = null;
+
+        // get from position api
         var info = Position.getInfo();
-        if (info != null && info.accuracy != Position.QUALITY_NOT_AVAILABLE) {
-            var loc = info.position.toRadians();
-            var now = Time.now();
-            var sunrise_moment = sunCalc.calculate(now, loc, sunCalc.SUNRISE);
-            var sunset_moment = sunCalc.calculate(now, loc, sunCalc.SUNSET);
-
-            var timeInfoSunrise = Gregorian.info(sunrise_moment, Time.FORMAT_SHORT);
-            var timeInfoSunset = Gregorian.info(sunset_moment, Time.FORMAT_SHORT); 
-
-            var sunrise_str = timeInfoSunrise.hour.format("%02d") + timeInfoSunrise.min.format("%02d");
-            var sunset_str = timeInfoSunset.hour.format("%02d") + timeInfoSunset.min.format("%02d");
-
-            dc.setColor(Graphics.COLOR_BLACK, leftBandColor);
-            dc.drawText(
-                    screenCenterPoint[0] - MARGIN,
-                    lineStart + 50,
-                    Graphics.FONT_SYSTEM_TINY,
-                    sunrise_str,
-                    Graphics.TEXT_JUSTIFY_RIGHT);
-
-            dc.setColor(Graphics.COLOR_BLACK, rightBandColor);
-            dc.drawText(
-                    screenCenterPoint[0] + MARGIN,
-                    lineStart + 50,
-                    Graphics.FONT_SYSTEM_TINY,
-                    sunset_str,
-                    Graphics.TEXT_JUSTIFY_LEFT);
+        if (info.position != null) {
+            loc = info.position.toRadians();
         }
+
+        // get from weather
+        if (loc == null || (loc[0] == 0 && loc[1] == 0)) {
+            var curConds = Weather.getCurrentConditions();
+            if (curConds != null) {
+                var obsLoc = curConds.observationLocationPosition;
+                if (obsLoc != null) {
+                    loc = obsLoc.toRadians();
+                }
+            }
+        }
+
+        // get from storage
+        if (loc == null || (loc[0] == 0 && loc[1] == 0)) {
+            loc = Storage.getValue("wf01_sun_location");
+            // draw it in gray to show that we're using a saved, possibly
+            // old, location
+            Storage.setValue("wf01_sun_color", Graphics.COLOR_DK_GRAY);
+        } else {
+            Storage.setValue("wf01_sun_location", loc);
+        }
+
+        // couldn't get any valid position, nothing to do
+        if (loc == null || (loc[0] == 0 && loc[1] == 0)) {
+            return;
+        }
+
+        var now = Time.now();
+        var sunrise_moment = sunCalc.calculate(now, loc, sunCalc.SUNRISE);
+        var sunset_moment = sunCalc.calculate(now, loc, sunCalc.SUNSET);
+
+        var timeInfoSunrise = Gregorian.info(sunrise_moment, Time.FORMAT_SHORT);
+        var timeInfoSunset = Gregorian.info(sunset_moment, Time.FORMAT_SHORT);
+
+        var sunrise_str = timeInfoSunrise.hour.format("%02d") + timeInfoSunrise.min.format("%02d");
+        var sunset_str = timeInfoSunset.hour.format("%02d") + timeInfoSunset.min.format("%02d");
+
+        var text_color = Storage.getValue("wf01_sun_color");
+
+        // reset saved color to black
+        Storage.setValue("wf01_sun_color", Graphics.COLOR_BLACK);
+
+        if (sunrise_str == null || sunset_str == null || text_color == null) {
+            return;
+        }
+
+        dc.setColor(text_color, leftBandColor);
+        dc.drawText(
+                screenCenterPoint[0] - MARGIN,
+                lineStart + 50,
+                Graphics.FONT_SYSTEM_TINY,
+                sunrise_str,
+                Graphics.TEXT_JUSTIFY_RIGHT);
+
+        dc.setColor(text_color, rightBandColor);
+        dc.drawText(
+                screenCenterPoint[0] + MARGIN,
+                lineStart + 50,
+                Graphics.FONT_SYSTEM_TINY,
+                sunset_str,
+                Graphics.TEXT_JUSTIFY_LEFT);
     }
 
     function drawBattery(dc) {

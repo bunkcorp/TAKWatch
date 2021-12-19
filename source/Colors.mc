@@ -1,5 +1,5 @@
 class Colors {
-    const COLOR_SIZE = 59;
+    const COLOR_SIZE = 58;
     var colors = [
         //0x000000,
         //0x000055,
@@ -23,7 +23,7 @@ class Colors {
         0x5500AA,
         0x5500FF,
         0x555500,
-        0x555555,
+        //0x555555,
         0x5555AA,
         0x5555FF,
         0x55AA00,
