@@ -12,6 +12,7 @@ const COLOR_LINE = 0x000000;
 const BAND_SIZE = 80;
 const MARGIN = 4;
 const DIVIDER = 1;
+const DATA_ROW_HEIGHT = 25;
 
 class Wf01View extends WatchUi.WatchFace
 {
@@ -64,9 +65,9 @@ class Wf01View extends WatchUi.WatchFace
         drawBandRight(offscreenDc, true);
 
         var today = Gregorian.info(Time.now(), Time.FORMAT_SHORT);
-        drawDate(offscreenDc, today);
-        drawSun(offscreenDc);
-        drawSteps(offscreenDc, true);
+        drawDate(offscreenDc, DATA_ROW_HEIGHT * 0, today);
+        drawSun(offscreenDc, DATA_ROW_HEIGHT * 2);
+        drawSteps(offscreenDc, DATA_ROW_HEIGHT * 1, true);
         lastDate = today;
     }
 
@@ -107,12 +108,12 @@ class Wf01View extends WatchUi.WatchFace
         dc.drawText(screenCenterPoint[0] + DIVIDER, 45, font, clockTime.min.format("%02d"), Graphics.TEXT_JUSTIFY_LEFT);
     }
 
-    function drawSteps(dc, draw_goal) {
+    function drawSteps(dc, y, draw_goal) {
         var activityInfo = ActivityMonitor.getInfo();
         dc.setColor(Graphics.COLOR_BLACK, leftBandColor);
         dc.drawText(
                 screenCenterPoint[0] - MARGIN,
-                lineStart + 25,
+                lineStart + y,
                 Graphics.FONT_SYSTEM_TINY,
                 activityInfo.steps,
                 Graphics.TEXT_JUSTIFY_RIGHT);
@@ -120,14 +121,14 @@ class Wf01View extends WatchUi.WatchFace
             dc.setColor(Graphics.COLOR_BLACK, rightBandColor);
             dc.drawText(
                     screenCenterPoint[0] + MARGIN,
-                    lineStart + 25,
+                    lineStart + y,
                     Graphics.FONT_SYSTEM_TINY,
                     activityInfo.stepGoal,
                     Graphics.TEXT_JUSTIFY_LEFT);
         }
     }
 
-    function drawDate(dc, today) {
+    function drawDate(dc, y, today) {
         var dateString = Lang.format(
                 "$1$$2$",
                 [
@@ -138,13 +139,13 @@ class Wf01View extends WatchUi.WatchFace
         dc.setColor(Graphics.COLOR_BLACK, leftBandColor);
         dc.drawText(
                 screenCenterPoint[0] - MARGIN,
-                lineStart + DIVIDER,
+                lineStart + DIVIDER + y,
                 Graphics.FONT_SYSTEM_TINY,
                 dateString,
                 Graphics.TEXT_JUSTIFY_RIGHT);
     }
 
-    function drawSun(dc) {
+    function drawSun(dc, y) {
         var loc = null;
 
         // get from position api
@@ -201,7 +202,7 @@ class Wf01View extends WatchUi.WatchFace
         dc.setColor(text_color, leftBandColor);
         dc.drawText(
                 screenCenterPoint[0] - MARGIN,
-                lineStart + 50,
+                lineStart + y,
                 Graphics.FONT_SYSTEM_TINY,
                 sunrise_str,
                 Graphics.TEXT_JUSTIFY_RIGHT);
@@ -209,18 +210,18 @@ class Wf01View extends WatchUi.WatchFace
         dc.setColor(text_color, rightBandColor);
         dc.drawText(
                 screenCenterPoint[0] + MARGIN,
-                lineStart + 50,
+                lineStart + y,
                 Graphics.FONT_SYSTEM_TINY,
                 sunset_str,
                 Graphics.TEXT_JUSTIFY_LEFT);
     }
 
-    function drawBattery(dc) {
+    function drawBattery(dc, y) {
         var stats = System.getSystemStats();
         dc.setColor(Graphics.COLOR_BLACK, rightBandColor);
         dc.drawText(
                 screenCenterPoint[0] + MARGIN,
-                lineStart + DIVIDER,
+                lineStart + DIVIDER + y,
                 Graphics.FONT_SYSTEM_TINY,
                 stats.battery.format("%d"),
                 Graphics.TEXT_JUSTIFY_LEFT);
@@ -265,16 +266,16 @@ class Wf01View extends WatchUi.WatchFace
         var invalid = drawBandRight(offscreenDc, newDay);
         if (newDay || invalid) {
             drawBandLeft(offscreenDc);
-            drawDate(offscreenDc, today);
-            drawSun(offscreenDc);
-            drawSteps(offscreenDc, true);
+            drawDate(offscreenDc, DATA_ROW_HEIGHT * 0, today);
+            drawSun(offscreenDc, DATA_ROW_HEIGHT * 2);
+            drawSteps(offscreenDc, DATA_ROW_HEIGHT * 1, true);
         }
         dc.drawBitmap(0, 0, offscreenBuffer);
 
         // update onscreen buffer
         drawTime(dc);
-        drawBattery(dc);
-        drawSteps(dc, false);
+        drawBattery(dc, DATA_ROW_HEIGHT * 0);
+        drawSteps(dc, DATA_ROW_HEIGHT * 1, false);
         drawTop(dc);
     }
 }
