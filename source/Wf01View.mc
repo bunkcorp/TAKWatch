@@ -228,6 +228,25 @@ class Wf01View extends WatchUi.WatchFace
                 Graphics.TEXT_JUSTIFY_LEFT);
     }
 
+    function drawWeatherTemperature(dc, y) {
+        var curConds = Weather.getCurrentConditions();
+        var tempStr = "-";
+        if (curConds != null) {
+            var temp = curConds.temperature;
+            if (temp != null) {
+                tempStr = temp;
+            }
+        }
+        var stats = System.getSystemStats();
+        dc.setColor(Graphics.COLOR_BLACK, rightBandColor);
+        dc.drawText(
+                screenCenterPoint[0] + MARGIN,
+                lineStart + DIVIDER + y,
+                Graphics.FONT_SYSTEM_TINY,
+                tempStr,
+                Graphics.TEXT_JUSTIFY_LEFT);
+    }
+
     function drawHeart(dc, y) {
         var avgHrStr = "-";
         var avgHr = UserProfile.Profile.averageRestingHeartRate;
@@ -293,6 +312,7 @@ class Wf01View extends WatchUi.WatchFace
         drawTime(dc);
         drawBattery(dc, DATA_ROW_HEIGHT * 0);
         drawSteps(dc, DATA_ROW_HEIGHT * 1, false);
+        drawWeatherTemperature(dc, DATA_ROW_HEIGHT * 3);
         drawTop(dc);
     }
 }
