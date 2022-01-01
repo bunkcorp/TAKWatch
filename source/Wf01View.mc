@@ -9,10 +9,10 @@ using Toybox.WatchUi;
 
 const COLOR_DND = 0xaaaaaa;
 const COLOR_LINE = 0x000000;
-const BAND_SIZE = 80;
+const BAND_SIZE = 90;
 const MARGIN = 4;
 const DIVIDER = 1;
-const DATA_ROW_HEIGHT = 25;
+const DATA_ROW_HEIGHT = 22;
 
 class Wf01View extends WatchUi.WatchFace
 {
@@ -67,6 +67,7 @@ class Wf01View extends WatchUi.WatchFace
         var today = Gregorian.info(Time.now(), Time.FORMAT_SHORT);
         drawDate(offscreenDc, DATA_ROW_HEIGHT * 0, today);
         drawSun(offscreenDc, DATA_ROW_HEIGHT * 2);
+        drawHeart(offscreenDc, DATA_ROW_HEIGHT * 3);
         drawSteps(offscreenDc, DATA_ROW_HEIGHT * 1, true);
         lastDate = today;
     }
@@ -227,6 +228,21 @@ class Wf01View extends WatchUi.WatchFace
                 Graphics.TEXT_JUSTIFY_LEFT);
     }
 
+    function drawHeart(dc, y) {
+        var avgHrStr = "-";
+        var avgHr = UserProfile.Profile.averageRestingHeartRate;
+        if (avgHr != null) {
+            avgHrStr = avgHr;//.format("%d");
+        }
+        dc.setColor(Graphics.COLOR_BLACK, leftBandColor);
+        dc.drawText(
+                screenCenterPoint[0] - MARGIN,
+                lineStart + y,
+                Graphics.FONT_SYSTEM_TINY,
+                avgHrStr,
+                Graphics.TEXT_JUSTIFY_RIGHT);
+    }
+
     function drawTop(dc) {
         var settings = System.getDeviceSettings();
         if (settings.notificationCount <= 0) {
@@ -268,6 +284,7 @@ class Wf01View extends WatchUi.WatchFace
             drawBandLeft(offscreenDc);
             drawDate(offscreenDc, DATA_ROW_HEIGHT * 0, today);
             drawSun(offscreenDc, DATA_ROW_HEIGHT * 2);
+            drawHeart(offscreenDc, DATA_ROW_HEIGHT * 3);
             drawSteps(offscreenDc, DATA_ROW_HEIGHT * 1, true);
         }
         dc.drawBitmap(0, 0, offscreenBuffer);
