@@ -39,7 +39,6 @@ class Wf01View extends WatchUi.WatchFace
 
         leftBandColor = doNotDisturb ? COLOR_DND : color_accent;
 
-        /* dc.setColor(leftBandColor, 0x00ff00); */
         dc.setColor(leftBandColor, 0x00ff00);
         dc.fillRectangle(0.5 * BAND_SIZE, dc.getHeight() - BAND_SIZE, BAND_SIZE, BAND_SIZE);
 
@@ -66,8 +65,18 @@ class Wf01View extends WatchUi.WatchFace
     function drawTime(dc) {
         var clockTime = System.getClockTime();
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
-        dc.drawText(screenCenterPoint[0] - DIVIDER, 45, font, clockTime.hour.format("%02d"), Graphics.TEXT_JUSTIFY_RIGHT);
-        dc.drawText(screenCenterPoint[0] + DIVIDER, 45, font, clockTime.min.format("%02d"), Graphics.TEXT_JUSTIFY_LEFT);
+        dc.drawText(
+                screenCenterPoint[0] - DIVIDER,
+                45,
+                font,
+                clockTime.hour.format("%02d"),
+                Graphics.TEXT_JUSTIFY_RIGHT);
+        dc.drawText(
+                screenCenterPoint[0] + DIVIDER,
+                45,
+                font,
+                clockTime.min.format("%02d"),
+                Graphics.TEXT_JUSTIFY_LEFT);
     }
 
     function drawSteps(dc, y, draw_goal) {
@@ -109,6 +118,7 @@ class Wf01View extends WatchUi.WatchFace
 
     function drawSun(dc, y) {
         var loc = null;
+        var text_color = Graphics.COLOR_BLACK;
 
         // get from position api
         var info = Position.getInfo();
@@ -132,7 +142,7 @@ class Wf01View extends WatchUi.WatchFace
             loc = Storage.getValue("wf01_sun_location");
             // draw it in gray to show that we're using a saved, possibly
             // old, location
-            Storage.setValue("wf01_sun_color", Graphics.COLOR_DK_GRAY);
+            text_color = Graphics.COLOR_DK_GRAY;
         } else {
             Storage.setValue("wf01_sun_location", loc);
         }
@@ -151,15 +161,6 @@ class Wf01View extends WatchUi.WatchFace
 
         var sunrise_str = timeInfoSunrise.hour.format("%02d") + timeInfoSunrise.min.format("%02d");
         var sunset_str = timeInfoSunset.hour.format("%02d") + timeInfoSunset.min.format("%02d");
-
-        var text_color = Storage.getValue("wf01_sun_color");
-
-        // reset saved color to black
-        Storage.setValue("wf01_sun_color", Graphics.COLOR_BLACK);
-
-        if (sunrise_str == null || sunset_str == null || text_color == null) {
-            return;
-        }
 
         dc.setColor(text_color, leftBandColor);
         dc.drawText(
@@ -249,6 +250,7 @@ class Wf01View extends WatchUi.WatchFace
         color_accent = Storage.getValue("wf01_accent");
         if (color_accent == null) {
             color_accent = colors.getRandomColor();
+
             Storage.setValue("wf01_accent", color_accent);
         }
 
@@ -280,15 +282,9 @@ class Wf01View extends WatchUi.WatchFace
     }
 
     function onUpdate(dc) {
-        // first update offscreen buffer
+        // update offscreen buffer
         var today = Gregorian.info(Time.now(), Time.FORMAT_SHORT);
-        var newDay = true;
-        if (lastDate == null) {
-            lastDate = today;
-        }
-        else {
-            newDay = today.day != lastDate.day;
-        }
+        var newDay = today.day != lastDate.day;
         lastDate = today;
 
         if (newDay) {
@@ -297,7 +293,8 @@ class Wf01View extends WatchUi.WatchFace
             Storage.setValue("wf01_accent", color_accent);
         }
 
-        // left side is drawn when shown in init
+        // left side is drawn in onLayout (can't change dnd mode without
+        // exiting the view)
         var invalid = drawBandRight(offscreenDc, newDay);
         if (newDay || invalid) {
             drawBandLeft(offscreenDc);
