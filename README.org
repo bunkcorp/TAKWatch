@@ -1,7 +1,6 @@
 * wf01
 
-Watch face for Garmin Forerunner 935 & 945 (and probably others, only tested
-properly on 945).
+Watch face for Garmin Forerunner 945.
 
 ** Screenshot
 
@@ -17,6 +16,8 @@ From top to bottom, left to right:
 - step goal
 - sunrise (hhmm)
 - sunset (hhmm)
+- seven day average resting heart rate (if available)
+- temperature (weather)
 
 - left side: do not disturb (gray: on, color: off)
 - right side: connection status (gray: disconnected, color: connected)
