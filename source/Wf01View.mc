@@ -33,45 +33,6 @@ class Wf01View extends WatchUi.WatchFace
 
     var color_accent = 0xff873c;
 
-    function initialize() {
-        WatchFace.initialize();
-
-        sunCalc = new SunCalc();
-        colors = new Colors();
-
-        color_accent = Storage.getValue("wf01_accent");
-        if (color_accent == null) {
-            color_accent = colors.getRandomColor();
-            Storage.setValue("wf01_accent", color_accent);
-        }
-
-        var settings = System.getDeviceSettings();
-        var isConnected = settings.connectionAvailable;
-        lastConnectionState = !isConnected;
-    }
-
-    function onLayout(dc) {
-        font = WatchUi.loadResource(Rez.Fonts.id_font_time);
-
-        offscreenBuffer = new Graphics.BufferedBitmap({
-                :width=>dc.getWidth(),
-                :height=>dc.getHeight()});
-
-        screenCenterPoint = [dc.getWidth()/2, dc.getHeight()/2];
-        lineStart = dc.getHeight() - BAND_SIZE;
-        offscreenDc = offscreenBuffer.getDc();
-
-        drawBandLeft(offscreenDc);
-        drawBandRight(offscreenDc, true);
-
-        var today = Gregorian.info(Time.now(), Time.FORMAT_SHORT);
-        drawDate(offscreenDc, DATA_ROW_HEIGHT * 0, today);
-        drawSun(offscreenDc, DATA_ROW_HEIGHT * 2);
-        drawHeart(offscreenDc, DATA_ROW_HEIGHT * 3);
-        drawSteps(offscreenDc, DATA_ROW_HEIGHT * 1, true);
-        lastDate = today;
-    }
-
     function drawBandLeft(dc) {
         var settings = System.getDeviceSettings();
         var doNotDisturb = settings.doNotDisturb;
@@ -277,6 +238,45 @@ class Wf01View extends WatchUi.WatchFace
                 Graphics.FONT_SYSTEM_TINY,
                 settings.notificationCount,
                 Graphics.TEXT_JUSTIFY_CENTER);
+    }
+
+    function initialize() {
+        WatchFace.initialize();
+
+        sunCalc = new SunCalc();
+        colors = new Colors();
+
+        color_accent = Storage.getValue("wf01_accent");
+        if (color_accent == null) {
+            color_accent = colors.getRandomColor();
+            Storage.setValue("wf01_accent", color_accent);
+        }
+
+        var settings = System.getDeviceSettings();
+        var isConnected = settings.connectionAvailable;
+        lastConnectionState = !isConnected;
+    }
+
+    function onLayout(dc) {
+        font = WatchUi.loadResource(Rez.Fonts.id_font_time);
+
+        offscreenBuffer = new Graphics.BufferedBitmap({
+                :width=>dc.getWidth(),
+                :height=>dc.getHeight()});
+
+        screenCenterPoint = [dc.getWidth()/2, dc.getHeight()/2];
+        lineStart = dc.getHeight() - BAND_SIZE;
+        offscreenDc = offscreenBuffer.getDc();
+
+        drawBandLeft(offscreenDc);
+        drawBandRight(offscreenDc, true);
+
+        var today = Gregorian.info(Time.now(), Time.FORMAT_SHORT);
+        drawDate(offscreenDc, DATA_ROW_HEIGHT * 0, today);
+        drawSun(offscreenDc, DATA_ROW_HEIGHT * 2);
+        drawHeart(offscreenDc, DATA_ROW_HEIGHT * 3);
+        drawSteps(offscreenDc, DATA_ROW_HEIGHT * 1, true);
+        lastDate = today;
     }
 
     function onUpdate(dc) {
