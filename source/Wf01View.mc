@@ -40,7 +40,7 @@ class Wf01View extends WatchUi.WatchFace
         leftBandColor = doNotDisturb ? COLOR_DND : color_accent;
 
         dc.setColor(leftBandColor, 0x00ff00);
-        dc.fillRectangle(0.5 * BAND_SIZE, dc.getHeight() - BAND_SIZE, BAND_SIZE, BAND_SIZE);
+        dc.fillRectangle(screenCenterPoint[0] - BAND_SIZE - DIVIDER, dc.getHeight() - BAND_SIZE, BAND_SIZE, BAND_SIZE);
 
         dc.setColor(COLOR_LINE, 0x00ff00);
         dc.fillRectangle(dc.getWidth() / 2 - DIVIDER, dc.getHeight() - BAND_SIZE, 2 * DIVIDER, BAND_SIZE);
