@@ -10,14 +10,16 @@ From top to bottom, left to right:
 
 - notifications
 - time (hhmm, 24-hours only)
+- rolling seven days running distance (km)
 - date (ddmm)
 - battery level
+- body battery
 - steps today
 - step goal
 - sunrise (hhmm)
 - sunset (hhmm)
-- seven day average resting heart rate (if available)
-- temperature (weather)
+- seven day average resting heart rate
+- outdoor temperature (Celsius)
 
 - left side: do not disturb (gray: on, color: off)
 - right side: connection status (gray: disconnected, color: connected)
@@ -25,9 +27,6 @@ From top to bottom, left to right:
 The color changes every night at 00:00.
 
 ** Credits
-
-Includes code for calculating sunrise and sunset from
-[[https://github.com/haraldh]].
 
 The font is
 [[http://www.fonts101.com/fonts/view/Uncategorized/42931/Interstate][Interstate]],
