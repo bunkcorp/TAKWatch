@@ -228,7 +228,8 @@ class Wf01View extends WatchUi.WatchFace
 
     function drawHeart(dc, y) {
         var avgHrStr = "-";
-        var avgHr = UserProfile.Profile.averageRestingHeartRate;
+        var profile = UserProfile.getProfile();
+        var avgHr = profile.averageRestingHeartRate;
         if (avgHr != null) {
             avgHrStr = avgHr;//.format("%d");
         }
