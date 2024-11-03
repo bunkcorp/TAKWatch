@@ -123,12 +123,6 @@ class Wf01View extends WatchUi.WatchFace
         var loc = null;
         var text_color = Graphics.COLOR_BLACK;
 
-        // get from position api
-        var info = Position.getInfo();
-        if (info.position != null) {
-            loc = info.position;
-        }
-
         // get from weather
         if (loc == null) {
             var curConds = Weather.getCurrentConditions();
