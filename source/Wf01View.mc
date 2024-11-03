@@ -31,7 +31,6 @@ class Wf01View extends WatchUi.WatchFace
     var leftLeftColumn;
     var rightRightColumn;
 
-    var sunCalc;
     var colors;
 
     var color_accent = 0xff873c;
@@ -126,38 +125,52 @@ class Wf01View extends WatchUi.WatchFace
         // get from position api
         var info = Position.getInfo();
         if (info.position != null) {
-            loc = info.position.toRadians();
+            loc = info.position;
         }
 
         // get from weather
-        if (loc == null || (loc[0] == 0 && loc[1] == 0)) {
+        if (loc == null) {
             var curConds = Weather.getCurrentConditions();
             if (curConds != null) {
                 var obsLoc = curConds.observationLocationPosition;
                 if (obsLoc != null) {
-                    loc = obsLoc.toRadians();
+                    loc = obsLoc;
                 }
             }
         }
 
         // get from storage
-        if (loc == null || (loc[0] == 0 && loc[1] == 0)) {
-            loc = Storage.getValue("wf01_sun_location");
+        if (loc == null) {
+            var lat = Storage.getValue("wf01_location_lat");
+            var lon = Storage.getValue("wf01_location_lon");
+            loc = new Position.Location(
+                    {
+                        :latitude => lat,
+                        :longitude => lon,
+                        :format => :degrees
+                    });
             // draw it in gray to show that we're using a saved, possibly
             // old, location
             text_color = Graphics.COLOR_DK_GRAY;
         } else {
-            Storage.setValue("wf01_sun_location", loc);
+            var pos = loc.toDegrees();
+            Storage.setValue("wf01_location_lat", pos[0]);
+            Storage.setValue("wf01_location_lon", pos[1]);
         }
 
         // couldn't get any valid position, nothing to do
-        if (loc == null || (loc[0] == 0 && loc[1] == 0)) {
+        if (loc == null) {
             return;
         }
 
         var now = Time.now();
-        var sunrise_moment = sunCalc.calculate(now, loc, sunCalc.SUNRISE);
-        var sunset_moment = sunCalc.calculate(now, loc, sunCalc.SUNSET);
+
+        var sunrise_moment = Weather.getSunrise(loc, now);
+        var sunset_moment = Weather.getSunset(loc, now);
+
+        if (sunrise_moment == null || sunset_moment == null) {
+            return;
+        }
 
         var timeInfoSunrise = Gregorian.info(sunrise_moment, Time.FORMAT_SHORT);
         var timeInfoSunset = Gregorian.info(sunset_moment, Time.FORMAT_SHORT);
@@ -296,7 +309,6 @@ class Wf01View extends WatchUi.WatchFace
     function initialize() {
         WatchFace.initialize();
 
-        sunCalc = new SunCalc();
         colors = new Colors();
 
         color_accent = Storage.getValue("wf01_accent");
