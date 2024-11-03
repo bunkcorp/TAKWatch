@@ -279,7 +279,7 @@ class Wf01View extends WatchUi.WatchFace
             return;
         }
 
-        dc.setColor(Graphics.COLOR_BLACK, leftBandColor);
+        dc.setColor(Graphics.COLOR_BLACK, rightBandColor);
         dc.drawText(
                 x,
                 lineStart + y,
