@@ -28,6 +28,9 @@ class Wf01View extends WatchUi.WatchFace
     var leftBandColor;
     var rightBandColor;
 
+    var leftLeftColumn;
+    var rightRightColumn;
+
     var sunCalc;
     var colors;
 
@@ -209,7 +212,38 @@ class Wf01View extends WatchUi.WatchFace
                 Graphics.TEXT_JUSTIFY_LEFT);
     }
 
-    function drawBodyBattery(dc, y) {
+    function drawWeeklyDistance(dc, x, y) {
+        var activities = UserProfile.getUserActivityHistory();
+
+        var today = new Time.Moment(Time.today().value());
+        var sevenDays = new Time.Duration(Gregorian.SECONDS_PER_DAY * 7);
+        var earliestTime = today.subtract(sevenDays);
+
+        var totalDistance = 0;
+        var activity = activities.next();
+        while (activity != null) {
+            if (activity.startTime != null) {
+                // startTime for fr945 uses "Garmin epoch":
+                // 1989–12–31T00:00:00Z => 631065600 seconds diff towards
+                // "real" epoch
+                // https://forums.garmin.com/developer/connect-iq/f/discussion/356000/weekly-running-distance
+                var startTime = activity.startTime.value() + 631065600;
+                if (activity.type == Activity.SPORT_RUNNING && startTime > earliestTime.value()) {
+                    totalDistance += activity.distance;
+                }
+            }
+            activity = activities.next();
+        }
+        dc.setColor(Graphics.COLOR_BLACK, leftBandColor);
+        dc.drawText(
+                x,
+                lineStart + y,
+                Graphics.FONT_SYSTEM_TINY,
+                (totalDistance / 1000).format("%d"),
+                Graphics.TEXT_JUSTIFY_LEFT);
+    }
+
+    function drawBodyBattery(dc, x, y) {
         var batteries = Toybox.SensorHistory.getBodyBatteryHistory({"period" => 1});
         var latest = batteries.next();
 
@@ -219,7 +253,7 @@ class Wf01View extends WatchUi.WatchFace
 
         dc.setColor(Graphics.COLOR_BLACK, leftBandColor);
         dc.drawText(
-                screenCenterPoint[0] - MARGIN,
+                x,
                 lineStart + y,
                 Graphics.FONT_SYSTEM_TINY,
                 latest.data.format("%d"),
@@ -294,7 +328,6 @@ class Wf01View extends WatchUi.WatchFace
         var today = Gregorian.info(Time.now(), Time.FORMAT_SHORT);
         drawDate(offscreenDc, DATA_ROW_HEIGHT * 0, today);
         drawSun(offscreenDc, DATA_ROW_HEIGHT * 2);
-        drawBodyBattery(offscreenDc, DATA_ROW_HEIGHT * 3);
         drawSteps(offscreenDc, DATA_ROW_HEIGHT * 1, true);
         lastDate = today;
     }
@@ -318,15 +351,20 @@ class Wf01View extends WatchUi.WatchFace
             drawBandLeft(offscreenDc);
             drawDate(offscreenDc, DATA_ROW_HEIGHT * 0, today);
             drawSun(offscreenDc, DATA_ROW_HEIGHT * 2);
-            drawBodyBattery(offscreenDc, DATA_ROW_HEIGHT * 3);
             drawSteps(offscreenDc, DATA_ROW_HEIGHT * 1, true);
         }
         dc.drawBitmap(0, 0, offscreenBuffer);
 
+        leftLeftColumn = screenCenterPoint[0] - BAND_SIZE + MARGIN;
+        rightRightColumn = screenCenterPoint[0] + BAND_SIZE - MARGIN;
+
         // update onscreen buffer
         drawTime(dc);
         drawBattery(dc, DATA_ROW_HEIGHT * 0);
+        drawBodyBattery(dc, rightRightColumn, DATA_ROW_HEIGHT * 0);
+        drawWeeklyDistance(offscreenDc, leftLeftColumn, DATA_ROW_HEIGHT * 0);
         drawSteps(dc, DATA_ROW_HEIGHT * 1, false);
+        drawHeart(dc, DATA_ROW_HEIGHT * 3);
         drawWeatherTemperature(dc, DATA_ROW_HEIGHT * 3);
         drawTop(dc);
     }
