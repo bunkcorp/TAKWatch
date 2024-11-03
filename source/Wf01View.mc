@@ -13,6 +13,7 @@ const BAND_SIZE = 90;
 const MARGIN = 4;
 const DIVIDER = 1;
 const DATA_ROW_HEIGHT = 22;
+const SEVEN_DAYS = new Time.Duration(Gregorian.SECONDS_PER_DAY * 7);
 
 class Wf01View extends WatchUi.WatchFace
 {
@@ -229,11 +230,30 @@ class Wf01View extends WatchUi.WatchFace
         var activities = UserProfile.getUserActivityHistory();
 
         var today = new Time.Moment(Time.today().value());
-        var sevenDays = new Time.Duration(Gregorian.SECONDS_PER_DAY * 7);
-        var earliestTime = today.subtract(sevenDays);
+        var earliestTime = today.subtract(SEVEN_DAYS);
+
+        var activity = activities.next();
+        if (activity == null) {
+            return;
+        }
+
+        var lastActivityTime = activity.startTime.value();
+        var lastActivityTimeSaved = Storage.getValue("wf01_distance_last_activity");
 
         var totalDistance = 0;
-        var activity = activities.next();
+        dc.setColor(Graphics.COLOR_BLACK, leftBandColor);
+        if (lastActivityTime == lastActivityTimeSaved) {
+            // nothing has changed, draw the saved value
+            totalDistance = Storage.getValue("wf01_distance_total");
+            dc.drawText(
+                    x,
+                    lineStart + y,
+                    Graphics.FONT_SYSTEM_TINY,
+                    (totalDistance / 1000).format("%d"),
+                    Graphics.TEXT_JUSTIFY_LEFT);
+            return;
+        }
+
         while (activity != null) {
             if (activity.startTime != null) {
                 // startTime for fr945 uses "Garmin epoch":
@@ -247,7 +267,8 @@ class Wf01View extends WatchUi.WatchFace
             }
             activity = activities.next();
         }
-        dc.setColor(Graphics.COLOR_BLACK, leftBandColor);
+        Storage.setValue("wf01_distance_last_activity", lastActivityTime);
+        Storage.setValue("wf01_distance_total", totalDistance);
         dc.drawText(
                 x,
                 lineStart + y,
@@ -332,6 +353,10 @@ class Wf01View extends WatchUi.WatchFace
 
         screenCenterPoint = [dc.getWidth()/2, dc.getHeight()/2];
         lineStart = dc.getHeight() - BAND_SIZE;
+
+        leftLeftColumn = screenCenterPoint[0] - BAND_SIZE + MARGIN;
+        rightRightColumn = screenCenterPoint[0] + BAND_SIZE - MARGIN;
+
         offscreenDc = offscreenBuffer.getDc();
 
         drawBandLeft(offscreenDc);
@@ -341,6 +366,7 @@ class Wf01View extends WatchUi.WatchFace
         drawDate(offscreenDc, DATA_ROW_HEIGHT * 0, today);
         drawSun(offscreenDc, DATA_ROW_HEIGHT * 2);
         drawSteps(offscreenDc, DATA_ROW_HEIGHT * 1, true);
+        drawWeeklyDistance(offscreenDc, leftLeftColumn, DATA_ROW_HEIGHT * 0);
         lastDate = today;
     }
 
@@ -359,6 +385,9 @@ class Wf01View extends WatchUi.WatchFace
         // left side is drawn in onLayout (can't change dnd mode without
         // exiting the view)
         var invalid = drawBandRight(offscreenDc, newDay);
+        // distance is drawn in onLayout (can't record activity without exiting
+        // the view)
+        drawWeeklyDistance(offscreenDc, leftLeftColumn, DATA_ROW_HEIGHT * 0);
         if (newDay || invalid) {
             drawBandLeft(offscreenDc);
             drawDate(offscreenDc, DATA_ROW_HEIGHT * 0, today);
@@ -367,14 +396,10 @@ class Wf01View extends WatchUi.WatchFace
         }
         dc.drawBitmap(0, 0, offscreenBuffer);
 
-        leftLeftColumn = screenCenterPoint[0] - BAND_SIZE + MARGIN;
-        rightRightColumn = screenCenterPoint[0] + BAND_SIZE - MARGIN;
-
         // update onscreen buffer
         drawTime(dc);
         drawBattery(dc, DATA_ROW_HEIGHT * 0);
         drawBodyBattery(dc, rightRightColumn, DATA_ROW_HEIGHT * 0);
-        drawWeeklyDistance(offscreenDc, leftLeftColumn, DATA_ROW_HEIGHT * 0);
         drawSteps(dc, DATA_ROW_HEIGHT * 1, false);
         drawHeart(dc, DATA_ROW_HEIGHT * 3);
         drawWeatherTemperature(dc, DATA_ROW_HEIGHT * 3);
