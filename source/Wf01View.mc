@@ -223,7 +223,7 @@ class Wf01View extends WatchUi.WatchFace
     function drawWeeklyDistance(dc, x, y) {
         var activities = UserProfile.getUserActivityHistory();
 
-        var today = new Time.Moment(Time.today().value());
+        var today = new Time.Moment(Time.today().value() + Gregorian.SECONDS_PER_DAY - 1);
         var earliestTime = today.subtract(SEVEN_DAYS);
 
         var totalDistance = 0;
@@ -241,6 +241,7 @@ class Wf01View extends WatchUi.WatchFace
             }
             activity = activities.next();
         }
+        dc.setColor(Graphics.COLOR_BLACK, leftBandColor);
         dc.drawText(
                 x,
                 lineStart + y,
