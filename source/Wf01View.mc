@@ -226,28 +226,8 @@ class Wf01View extends WatchUi.WatchFace
         var today = new Time.Moment(Time.today().value());
         var earliestTime = today.subtract(SEVEN_DAYS);
 
-        var activity = activities.next();
-        if (activity == null) {
-            return;
-        }
-
-        var lastActivityTime = activity.startTime.value();
-        var lastActivityTimeSaved = Storage.getValue("wf01_distance_last_activity");
-
         var totalDistance = 0;
-        dc.setColor(Graphics.COLOR_BLACK, leftBandColor);
-        if (lastActivityTime == lastActivityTimeSaved) {
-            // nothing has changed, draw the saved value
-            totalDistance = Storage.getValue("wf01_distance_total");
-            dc.drawText(
-                    x,
-                    lineStart + y,
-                    Graphics.FONT_SYSTEM_TINY,
-                    (totalDistance / 1000).format("%d"),
-                    Graphics.TEXT_JUSTIFY_LEFT);
-            return;
-        }
-
+        var activity = activities.next();
         while (activity != null) {
             if (activity.startTime != null) {
                 // startTime for fr945 uses "Garmin epoch":
@@ -261,8 +241,6 @@ class Wf01View extends WatchUi.WatchFace
             }
             activity = activities.next();
         }
-        Storage.setValue("wf01_distance_last_activity", lastActivityTime);
-        Storage.setValue("wf01_distance_total", totalDistance);
         dc.drawText(
                 x,
                 lineStart + y,
