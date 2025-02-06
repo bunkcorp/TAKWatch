@@ -65,6 +65,16 @@ class Wf01View extends WatchUi.WatchFace
         return true;
     }
 
+    function drawMoveBar(dc) {
+        var moveBarLevel = ActivityMonitor.getInfo().moveBarLevel;
+        if (moveBarLevel == null) {
+            return;
+        }
+        var height = moveBarLevel * BAND_SIZE / (ActivityMonitor.MOVE_BAR_LEVEL_MAX - ActivityMonitor.MOVE_BAR_LEVEL_MIN);
+        dc.setColor(0xffffff, 0x000000);
+        dc.fillRectangle(screenCenterPoint[0] - DIVIDER, dc.getHeight() - height, DIVIDER * 2, BAND_SIZE);
+    }
+
     function drawTime(dc) {
         var clockTime = System.getClockTime();
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
@@ -358,6 +368,7 @@ class Wf01View extends WatchUi.WatchFace
 
         drawBandLeft(offscreenDc);
         drawBandRight(offscreenDc, true);
+        drawMoveBar(offscreenDc);
 
         var today = Gregorian.info(Time.now(), Time.FORMAT_SHORT);
         drawDate(offscreenDc, DATA_ROW_HEIGHT * 0, today);
@@ -395,6 +406,7 @@ class Wf01View extends WatchUi.WatchFace
 
         // update onscreen buffer
         drawTime(dc);
+        drawMoveBar(dc);
         drawBattery(dc, DATA_ROW_HEIGHT * 0);
         drawBodyBattery(dc, rightRightColumn, DATA_ROW_HEIGHT * 0);
         drawSteps(dc, DATA_ROW_HEIGHT * 1, false);

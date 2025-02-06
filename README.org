@@ -6,20 +6,21 @@ Watch face for Garmin Forerunner 945.
 
 [[file:screenshot.png]]
 
-From top to bottom, left to right:
+From top to bottom, left to right (values shown in the image in the []):
 
-- notifications
-- time (hhmm, 24-hours only)
-- rolling seven days running distance (km)
-- date (ddmm)
-- battery level
-- body battery
-- steps today
-- step goal
-- sunrise (hhmm)
-- sunset (hhmm)
-- seven day average resting heart rate
-- outdoor temperature (Celsius)
+- notifications [5]
+- time (hhmm, 24-hours only) [1613]
+- rolling seven days running distance (km) [62]
+- date (ddmm) [0311]
+- steps today [6753]
+- sunrise (hhmm) [0715]
+- seven day average resting heart rate [41]
+- move bar level (the white bar in the middle)
+- battery level [99]
+- step goal [10410]
+- sunset (hhmm) [1625]
+- outdoor temperature (Celsius) [11]
+- body battery [58]
 
 - left side: do not disturb (gray: on, color: off)
 - right side: connection status (gray: disconnected, color: connected)

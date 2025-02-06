@@ -63,8 +63,8 @@ class Colors {
         0xFFAAFF,
         0xFFFF00,
         0xFFFF55,
-        0xFFFFAA,
-        0xFFFFFF
+        0xFFFFAA
+        //0xFFFFFF
     ];
 
     function init() {
