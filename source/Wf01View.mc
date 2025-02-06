@@ -226,8 +226,29 @@ class Wf01View extends WatchUi.WatchFace
         var today = new Time.Moment(Time.today().value() + Gregorian.SECONDS_PER_DAY - 1);
         var earliestTime = today.subtract(SEVEN_DAYS);
 
-        var totalDistance = 0;
         var activity = activities.next();
+        if (activity == null) {
+            return;
+        }
+
+        var clockTime = System.getClockTime();
+        var lastHour = Storage.getValue("wf01_distance_last_hour");
+
+        var totalDistance = 0;
+        // update every hour
+        if (clockTime.hour == lastHour) {
+            dc.setColor(Graphics.COLOR_BLACK, leftBandColor);
+            // nothing has changed, draw the saved value
+            totalDistance = Storage.getValue("wf01_distance_total");
+            dc.drawText(
+                    x,
+                    lineStart + y,
+                    Graphics.FONT_SYSTEM_TINY,
+                    (totalDistance / 1000).format("%d"),
+                    Graphics.TEXT_JUSTIFY_LEFT);
+            return;
+        }
+
         while (activity != null) {
             if (activity.startTime != null) {
                 // startTime for fr945 uses "Garmin epoch":
@@ -241,7 +262,10 @@ class Wf01View extends WatchUi.WatchFace
             }
             activity = activities.next();
         }
-        dc.setColor(Graphics.COLOR_BLACK, leftBandColor);
+
+        Storage.setValue("wf01_distance_total", totalDistance);
+        Storage.setValue("wf01_distance_last_hour", clockTime.hour);
+
         dc.drawText(
                 x,
                 lineStart + y,
@@ -339,6 +363,8 @@ class Wf01View extends WatchUi.WatchFace
         drawDate(offscreenDc, DATA_ROW_HEIGHT * 0, today);
         drawSun(offscreenDc, DATA_ROW_HEIGHT * 2);
         drawSteps(offscreenDc, DATA_ROW_HEIGHT * 1, true);
+        // distance is drawn in onLayout (can't record activity without exiting
+        // the view)
         drawWeeklyDistance(offscreenDc, leftLeftColumn, DATA_ROW_HEIGHT * 0);
         lastDate = today;
     }
@@ -358,14 +384,12 @@ class Wf01View extends WatchUi.WatchFace
         // left side is drawn in onLayout (can't change dnd mode without
         // exiting the view)
         var invalid = drawBandRight(offscreenDc, newDay);
-        // distance is drawn in onLayout (can't record activity without exiting
-        // the view)
-        drawWeeklyDistance(offscreenDc, leftLeftColumn, DATA_ROW_HEIGHT * 0);
         if (newDay || invalid) {
             drawBandLeft(offscreenDc);
             drawDate(offscreenDc, DATA_ROW_HEIGHT * 0, today);
             drawSun(offscreenDc, DATA_ROW_HEIGHT * 2);
             drawSteps(offscreenDc, DATA_ROW_HEIGHT * 1, true);
+            drawWeeklyDistance(offscreenDc, leftLeftColumn, DATA_ROW_HEIGHT * 0);
         }
         dc.drawBitmap(0, 0, offscreenBuffer);
 
