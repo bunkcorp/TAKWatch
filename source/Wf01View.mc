@@ -244,10 +244,11 @@ class Wf01View extends WatchUi.WatchFace
         var clockTime = System.getClockTime();
         var lastHour = Storage.getValue("wf01_distance_last_hour");
 
+        dc.setColor(Graphics.COLOR_BLACK, leftBandColor);
+
         var totalDistance = 0;
         // update every hour
         if (clockTime.hour == lastHour) {
-            dc.setColor(Graphics.COLOR_BLACK, leftBandColor);
             // nothing has changed, draw the saved value
             totalDistance = Storage.getValue("wf01_distance_total");
             dc.drawText(
