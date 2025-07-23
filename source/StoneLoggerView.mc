@@ -2,6 +2,8 @@ using Toybox.Application.Storage;
 using Toybox.Graphics;
 using Toybox.Lang;
 using Toybox.System;
+using Toybox.Time;
+using Toybox.Time.Gregorian;
 using Toybox.WatchUi;
 
 class StoneLoggerView extends WatchUi.View {
@@ -10,7 +12,8 @@ class StoneLoggerView extends WatchUi.View {
         MAIN_SCREEN,
         STONE_SELECTION,
         VIRTUE_SELECTION,
-        NON_VIRTUE_SELECTION
+        NON_VIRTUE_SELECTION,
+        HISTORY_VIEW
     }
     
     var currentState;
@@ -18,6 +21,8 @@ class StoneLoggerView extends WatchUi.View {
     var blackStoneCount;
     var selectedOption; // 0 = white, 1 = black
     var selectedVirtueIndex;
+    var currentDate;
+    var historyDayIndex; // For scrolling through history
     
     // 10 Virtues (for white stones)
     var virtues = [
@@ -51,6 +56,9 @@ class StoneLoggerView extends WatchUi.View {
         View.initialize();
         currentState = MAIN_SCREEN;
         
+        // Check for daily reset
+        checkDailyReset();
+        
         // Load stored counts
         whiteStoneCount = Storage.getValue("white_stones");
         if (whiteStoneCount == null) {
@@ -64,6 +72,87 @@ class StoneLoggerView extends WatchUi.View {
         
         selectedOption = 0; // Default to white
         selectedVirtueIndex = 0; // Default to first virtue/non-virtue
+        historyDayIndex = 0; // Start with today
+    }
+    
+    function checkDailyReset() {
+        var today = Time.Gregorian.info(Time.now(), Time.FORMAT_SHORT);
+        var todayString = today.year + "-" + today.month.format("%02d") + "-" + today.day.format("%02d");
+        
+        var lastDate = Storage.getValue("last_date");
+        
+        if (lastDate != null && lastDate.equals(todayString)) {
+            // Same day, no reset needed
+            currentDate = todayString;
+            return;
+        }
+        
+        // New day detected - save yesterday's data and reset
+        if (lastDate != null) {
+            saveHistoricalData(lastDate);
+        }
+        
+        // Reset daily counts
+        Storage.setValue("white_stones", 0);
+        Storage.setValue("black_stones", 0);
+        
+        // Reset individual virtue/non-virtue counts
+        for (var i = 0; i < 10; i++) {
+            Storage.setValue("virtue_" + i, 0);
+            Storage.setValue("nonvirtue_" + i, 0);
+        }
+        
+        // Update current date
+        Storage.setValue("last_date", todayString);
+        currentDate = todayString;
+    }
+    
+    function saveHistoricalData(dateString) {
+        // Save the day's totals
+        var whiteCount = Storage.getValue("white_stones");
+        var blackCount = Storage.getValue("black_stones");
+        
+        if (whiteCount == null) { whiteCount = 0; }
+        if (blackCount == null) { blackCount = 0; }
+        
+        // Store historical data with date as key
+        Storage.setValue("history_" + dateString + "_white", whiteCount);
+        Storage.setValue("history_" + dateString + "_black", blackCount);
+        
+        // Store individual virtue/non-virtue counts
+        for (var i = 0; i < 10; i++) {
+            var virtueCount = Storage.getValue("virtue_" + i);
+            var nonVirtueCount = Storage.getValue("nonvirtue_" + i);
+            
+            if (virtueCount == null) { virtueCount = 0; }
+            if (nonVirtueCount == null) { nonVirtueCount = 0; }
+            
+            Storage.setValue("history_" + dateString + "_virtue_" + i, virtueCount);
+            Storage.setValue("history_" + dateString + "_nonvirtue_" + i, nonVirtueCount);
+        }
+        
+        // Keep a list of historical dates (last 30 days)
+        var historicalDates = Storage.getValue("historical_dates");
+        if (historicalDates == null) {
+            historicalDates = [];
+        }
+        
+        // Add new date and keep only last 30 days
+        historicalDates.add(dateString);
+        if (historicalDates.size() > 30) {
+            var oldDate = historicalDates[0];
+            historicalDates = historicalDates.slice(1, null);
+            
+            // Clean up old data
+            Storage.deleteValue("history_" + oldDate + "_white");
+            Storage.deleteValue("history_" + oldDate + "_black");
+            for (var j = 0; j < 10; j++) {
+                Storage.deleteValue("history_" + oldDate + "_virtue_" + j);
+                Storage.deleteValue("history_" + oldDate + "_nonvirtue_" + j);
+            }
+        }
+        
+        Storage.setValue("historical_dates", historicalDates);
     }
     
     function onUpdate(dc) {
@@ -78,6 +167,8 @@ class StoneLoggerView extends WatchUi.View {
             drawVirtueSelectionScreen(dc);
         } else if (currentState == NON_VIRTUE_SELECTION) {
             drawNonVirtueSelectionScreen(dc);
+        } else if (currentState == HISTORY_VIEW) {
+            drawHistoryScreen(dc);
         }
     }
     
@@ -124,6 +215,10 @@ class StoneLoggerView extends WatchUi.View {
         // Bottom accent bar
         dc.setColor(Graphics.COLOR_YELLOW, Graphics.COLOR_TRANSPARENT);
         dc.fillRectangle(0, screenHeight - 5, screenWidth, 5);
+        
+        // History access hint
+        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(centerX, screenHeight - 25, Graphics.FONT_TINY, "BACK for history", Graphics.TEXT_JUSTIFY_CENTER);
         
     }
     
@@ -245,6 +340,72 @@ class StoneLoggerView extends WatchUi.View {
         }
     }
     
+    function drawHistoryScreen(dc) {
+        var screenWidth = dc.getWidth();
+        var screenHeight = dc.getHeight();
+        var centerX = screenWidth / 2;
+        
+        // Get historical dates
+        var historicalDates = Storage.getValue("historical_dates");
+        if (historicalDates == null) {
+            historicalDates = [];
+        }
+        
+        // Title
+        dc.setColor(Graphics.COLOR_YELLOW, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(centerX, 15, Graphics.FONT_SMALL, "History", Graphics.TEXT_JUSTIFY_CENTER);
+        
+        if (historicalDates.size() == 0) {
+            dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+            dc.drawText(centerX, screenHeight / 2, Graphics.FONT_SMALL, "No history yet", Graphics.TEXT_JUSTIFY_CENTER);
+            return;
+        }
+        
+        // Show current day being viewed
+        var dateIndex = historicalDates.size() - 1 - historyDayIndex;
+        if (dateIndex < 0 || dateIndex >= historicalDates.size()) {
+            historyDayIndex = 0;
+            dateIndex = historicalDates.size() - 1;
+        }
+        
+        var viewDate = historicalDates[dateIndex];
+        
+        // Date being viewed
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(centerX, 35, Graphics.FONT_TINY, viewDate + " (" + (historyDayIndex + 1) + " days ago)", Graphics.TEXT_JUSTIFY_CENTER);
+        
+        // Get data for this date
+        var whiteCount = Storage.getValue("history_" + viewDate + "_white");
+        var blackCount = Storage.getValue("history_" + viewDate + "_black");
+        
+        if (whiteCount == null) { whiteCount = 0; }
+        if (blackCount == null) { blackCount = 0; }
+        
+        // Display counts similar to main screen but smaller
+        var startY = 60;
+        
+        // White stones section
+        dc.setColor(0x003300, Graphics.COLOR_TRANSPARENT);
+        dc.fillRoundedRectangle(centerX - 60, startY, 120, 25, 3);
+        dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(centerX, startY + 5, Graphics.FONT_TINY, "Virtues", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(centerX, startY + 15, Graphics.FONT_SMALL, whiteCount.toString(), Graphics.TEXT_JUSTIFY_CENTER);
+        
+        // Black stones section
+        dc.setColor(0x330000, Graphics.COLOR_TRANSPARENT);
+        dc.fillRoundedRectangle(centerX - 60, startY + 35, 120, 25, 3);
+        dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(centerX, startY + 40, Graphics.FONT_TINY, "Non-Virtues", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(centerX, startY + 50, Graphics.FONT_SMALL, blackCount.toString(), Graphics.TEXT_JUSTIFY_CENTER);
+        
+        // Navigation instructions
+        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(centerX, screenHeight - 40, Graphics.FONT_TINY, "UP/DOWN: navigate days", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX, screenHeight - 25, Graphics.FONT_TINY, "BACK: return to main", Graphics.TEXT_JUSTIFY_CENTER);
+    }
+    
     function onStartPressed() {
         if (currentState == MAIN_SCREEN) {
             currentState = STONE_SELECTION;
@@ -300,6 +461,12 @@ class StoneLoggerView extends WatchUi.View {
             if (selectedVirtueIndex < 0) {
                 selectedVirtueIndex = 9; // Wrap to bottom
             }
+        } else if (currentState == HISTORY_VIEW) {
+            // Go back in time (older days)
+            var historicalDates = Storage.getValue("historical_dates");
+            if (historicalDates != null && historyDayIndex < historicalDates.size() - 1) {
+                historyDayIndex++;
+            }
         }
         WatchUi.requestUpdate();
     }
@@ -313,17 +480,32 @@ class StoneLoggerView extends WatchUi.View {
             if (selectedVirtueIndex > 9) {
                 selectedVirtueIndex = 0; // Wrap to top
             }
+        } else if (currentState == HISTORY_VIEW) {
+            // Go forward in time (newer days)
+            if (historyDayIndex > 0) {
+                historyDayIndex--;
+            }
         }
         WatchUi.requestUpdate();
     }
     
     function onBackPressed() {
-        if (currentState == STONE_SELECTION) {
+        if (currentState == MAIN_SCREEN) {
+            // From main screen, go to history
+            currentState = HISTORY_VIEW;
+            historyDayIndex = 0; // Start with most recent
+            WatchUi.requestUpdate();
+            return true; // Handled
+        } else if (currentState == STONE_SELECTION) {
             currentState = MAIN_SCREEN;
             WatchUi.requestUpdate();
             return true; // Handled
         } else if (currentState == VIRTUE_SELECTION || currentState == NON_VIRTUE_SELECTION) {
             currentState = STONE_SELECTION;
+            WatchUi.requestUpdate();
+            return true; // Handled
+        } else if (currentState == HISTORY_VIEW) {
+            currentState = MAIN_SCREEN;
             WatchUi.requestUpdate();
             return true; // Handled
         }
