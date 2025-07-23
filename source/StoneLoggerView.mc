@@ -21,30 +21,30 @@ class StoneLoggerView extends WatchUi.View {
     
     // 10 Virtues (for white stones)
     var virtues = [
-        "Generosity",
-        "Patience", 
-        "Discipline",
-        "Diligence",
-        "Meditation",
-        "Wisdom",
-        "Loving-kindness",
-        "Compassion",
-        "Joy",
-        "Equanimity"
+        "Insight",
+        "Love",
+        "Content",
+        "Meaning",
+        "Kindness",
+        "Harmony",
+        "Truth",
+        "Conduct",
+        "Give",
+        "Protect"
     ];
     
-    // 10 Non-virtues (for black stones)
+    // 10 Non-virtues (for black stones) 
     var nonVirtues = [
-        "Killing",
-        "Stealing", 
-        "Sexual misconduct",
-        "Lying",
-        "Divisive speech",
-        "Harsh speech",
-        "Idle chatter",
-        "Covetousness",
-        "Ill will",
-        "Wrong view"
+        "Error",
+        "Ill Will",
+        "Covet",
+        "Idle",
+        "Harsh",
+        "Divide",
+        "Lie",
+        "Lust",
+        "Steal",
+        "Kill"
     ];
     
     function initialize() {
@@ -92,15 +92,13 @@ class StoneLoggerView extends WatchUi.View {
         dc.drawText(centerX, 30, Graphics.FONT_MEDIUM, "Stone Logger", Graphics.TEXT_JUSTIFY_CENTER);
         
         // White stone count
-        dc.drawText(centerX, centerY - 40, Graphics.FONT_SMALL, "White Stones:", Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(centerX, centerY - 20, Graphics.FONT_NUMBER_HOT, whiteStoneCount.toString(), Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX, centerY - 50, Graphics.FONT_SMALL, "White Stones:", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX, centerY - 25, Graphics.FONT_MEDIUM, whiteStoneCount.toString(), Graphics.TEXT_JUSTIFY_CENTER);
         
         // Black stone count  
-        dc.drawText(centerX, centerY + 10, Graphics.FONT_SMALL, "Black Stones:", Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(centerX, centerY + 30, Graphics.FONT_NUMBER_HOT, blackStoneCount.toString(), Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX, centerY + 5, Graphics.FONT_SMALL, "Black Stones:", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX, centerY + 30, Graphics.FONT_MEDIUM, blackStoneCount.toString(), Graphics.TEXT_JUSTIFY_CENTER);
         
-        // Instructions
-        dc.drawText(centerX, screenHeight - 40, Graphics.FONT_TINY, "Press START to log", Graphics.TEXT_JUSTIFY_CENTER);
     }
     
     function drawSelectionScreen(dc) {
@@ -133,10 +131,6 @@ class StoneLoggerView extends WatchUi.View {
             dc.drawText(centerX, centerY + 10, Graphics.FONT_MEDIUM, "BLACK", Graphics.TEXT_JUSTIFY_CENTER);
         }
         
-        // Instructions
-        dc.drawText(centerX, screenHeight - 60, Graphics.FONT_TINY, "UP/DOWN to select", Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(centerX, screenHeight - 40, Graphics.FONT_TINY, "START to confirm", Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(centerX, screenHeight - 20, Graphics.FONT_TINY, "BACK to cancel", Graphics.TEXT_JUSTIFY_CENTER);
     }
     
     function drawVirtueSelectionScreen(dc) {
@@ -147,18 +141,13 @@ class StoneLoggerView extends WatchUi.View {
         
         // Title
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(centerX, 20, Graphics.FONT_SMALL, "Select Virtue", Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(centerX, 35, Graphics.FONT_TINY, "(" + (selectedVirtueIndex + 1) + " of 10)", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX, 15, Graphics.FONT_SMALL, "Select Virtue", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX, 40, Graphics.FONT_TINY, "(" + (selectedVirtueIndex + 1) + " of 10)", Graphics.TEXT_JUSTIFY_CENTER);
         
         // Current virtue (highlighted)
         dc.setColor(Graphics.COLOR_BLUE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(centerX, centerY - 10, Graphics.FONT_SMALL, "> " + virtues[selectedVirtueIndex] + " <", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX, centerY - 10, Graphics.FONT_MEDIUM, "> " + virtues[selectedVirtueIndex] + " <", Graphics.TEXT_JUSTIFY_CENTER);
         
-        // Instructions
-        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(centerX, screenHeight - 60, Graphics.FONT_TINY, "UP/DOWN to browse", Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(centerX, screenHeight - 40, Graphics.FONT_TINY, "START to select", Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(centerX, screenHeight - 20, Graphics.FONT_TINY, "BACK to cancel", Graphics.TEXT_JUSTIFY_CENTER);
     }
     
     function drawNonVirtueSelectionScreen(dc) {
@@ -169,18 +158,13 @@ class StoneLoggerView extends WatchUi.View {
         
         // Title
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(centerX, 20, Graphics.FONT_SMALL, "Select Non-Virtue", Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(centerX, 35, Graphics.FONT_TINY, "(" + (selectedVirtueIndex + 1) + " of 10)", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX, 15, Graphics.FONT_TINY, "Select Non-Virtue", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX, 40, Graphics.FONT_TINY, "(" + (selectedVirtueIndex + 1) + " of 10)", Graphics.TEXT_JUSTIFY_CENTER);
         
         // Current non-virtue (highlighted)
         dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(centerX, centerY - 10, Graphics.FONT_SMALL, "> " + nonVirtues[selectedVirtueIndex] + " <", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX, centerY - 10, Graphics.FONT_MEDIUM, "> " + nonVirtues[selectedVirtueIndex] + " <", Graphics.TEXT_JUSTIFY_CENTER);
         
-        // Instructions
-        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(centerX, screenHeight - 60, Graphics.FONT_TINY, "UP/DOWN to browse", Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(centerX, screenHeight - 40, Graphics.FONT_TINY, "START to select", Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(centerX, screenHeight - 20, Graphics.FONT_TINY, "BACK to cancel", Graphics.TEXT_JUSTIFY_CENTER);
     }
     
     function onStartPressed() {
