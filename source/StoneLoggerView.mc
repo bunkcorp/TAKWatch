@@ -8,13 +8,44 @@ class StoneLoggerView extends WatchUi.View {
     
     enum AppState {
         MAIN_SCREEN,
-        STONE_SELECTION
+        STONE_SELECTION,
+        VIRTUE_SELECTION,
+        NON_VIRTUE_SELECTION
     }
     
     var currentState;
     var whiteStoneCount;
     var blackStoneCount;
     var selectedOption; // 0 = white, 1 = black
+    var selectedVirtueIndex;
+    
+    // 10 Virtues (for white stones)
+    var virtues = [
+        "Generosity",
+        "Patience", 
+        "Discipline",
+        "Diligence",
+        "Meditation",
+        "Wisdom",
+        "Loving-kindness",
+        "Compassion",
+        "Joy",
+        "Equanimity"
+    ];
+    
+    // 10 Non-virtues (for black stones)
+    var nonVirtues = [
+        "Killing",
+        "Stealing", 
+        "Sexual misconduct",
+        "Lying",
+        "Divisive speech",
+        "Harsh speech",
+        "Idle chatter",
+        "Covetousness",
+        "Ill will",
+        "Wrong view"
+    ];
     
     function initialize() {
         View.initialize();
@@ -32,6 +63,7 @@ class StoneLoggerView extends WatchUi.View {
         }
         
         selectedOption = 0; // Default to white
+        selectedVirtueIndex = 0; // Default to first virtue/non-virtue
     }
     
     function onUpdate(dc) {
@@ -42,6 +74,10 @@ class StoneLoggerView extends WatchUi.View {
             drawMainScreen(dc);
         } else if (currentState == STONE_SELECTION) {
             drawSelectionScreen(dc);
+        } else if (currentState == VIRTUE_SELECTION) {
+            drawVirtueSelectionScreen(dc);
+        } else if (currentState == NON_VIRTUE_SELECTION) {
+            drawNonVirtueSelectionScreen(dc);
         }
     }
     
@@ -103,19 +139,91 @@ class StoneLoggerView extends WatchUi.View {
         dc.drawText(centerX, screenHeight - 20, Graphics.FONT_TINY, "BACK to cancel", Graphics.TEXT_JUSTIFY_CENTER);
     }
     
+    function drawVirtueSelectionScreen(dc) {
+        var screenWidth = dc.getWidth();
+        var screenHeight = dc.getHeight();
+        var centerX = screenWidth / 2;
+        var centerY = screenHeight / 2;
+        
+        // Title
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(centerX, 20, Graphics.FONT_SMALL, "Select Virtue", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX, 35, Graphics.FONT_TINY, "(" + (selectedVirtueIndex + 1) + " of 10)", Graphics.TEXT_JUSTIFY_CENTER);
+        
+        // Current virtue (highlighted)
+        dc.setColor(Graphics.COLOR_BLUE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(centerX, centerY - 10, Graphics.FONT_SMALL, "> " + virtues[selectedVirtueIndex] + " <", Graphics.TEXT_JUSTIFY_CENTER);
+        
+        // Instructions
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(centerX, screenHeight - 60, Graphics.FONT_TINY, "UP/DOWN to browse", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX, screenHeight - 40, Graphics.FONT_TINY, "START to select", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX, screenHeight - 20, Graphics.FONT_TINY, "BACK to cancel", Graphics.TEXT_JUSTIFY_CENTER);
+    }
+    
+    function drawNonVirtueSelectionScreen(dc) {
+        var screenWidth = dc.getWidth();
+        var screenHeight = dc.getHeight();
+        var centerX = screenWidth / 2;
+        var centerY = screenHeight / 2;
+        
+        // Title
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(centerX, 20, Graphics.FONT_SMALL, "Select Non-Virtue", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX, 35, Graphics.FONT_TINY, "(" + (selectedVirtueIndex + 1) + " of 10)", Graphics.TEXT_JUSTIFY_CENTER);
+        
+        // Current non-virtue (highlighted)
+        dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(centerX, centerY - 10, Graphics.FONT_SMALL, "> " + nonVirtues[selectedVirtueIndex] + " <", Graphics.TEXT_JUSTIFY_CENTER);
+        
+        // Instructions
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(centerX, screenHeight - 60, Graphics.FONT_TINY, "UP/DOWN to browse", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX, screenHeight - 40, Graphics.FONT_TINY, "START to select", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX, screenHeight - 20, Graphics.FONT_TINY, "BACK to cancel", Graphics.TEXT_JUSTIFY_CENTER);
+    }
+    
     function onStartPressed() {
         if (currentState == MAIN_SCREEN) {
             currentState = STONE_SELECTION;
             selectedOption = 0; // Reset to white
         } else if (currentState == STONE_SELECTION) {
-            // Log the selected stone
+            // Go to virtue or non-virtue selection
+            selectedVirtueIndex = 0; // Reset to first item
             if (selectedOption == 0) {
-                whiteStoneCount++;
-                Storage.setValue("white_stones", whiteStoneCount);
+                currentState = VIRTUE_SELECTION;
             } else {
-                blackStoneCount++;
-                Storage.setValue("black_stones", blackStoneCount);
+                currentState = NON_VIRTUE_SELECTION;
             }
+        } else if (currentState == VIRTUE_SELECTION) {
+            // Log the selected virtue
+            whiteStoneCount++;
+            Storage.setValue("white_stones", whiteStoneCount);
+            
+            // Store the specific virtue selected (for future detailed tracking)
+            var virtueKey = "virtue_" + selectedVirtueIndex;
+            var virtueCount = Storage.getValue(virtueKey);
+            if (virtueCount == null) {
+                virtueCount = 0;
+            }
+            virtueCount++;
+            Storage.setValue(virtueKey, virtueCount);
+            
+            currentState = MAIN_SCREEN;
+        } else if (currentState == NON_VIRTUE_SELECTION) {
+            // Log the selected non-virtue
+            blackStoneCount++;
+            Storage.setValue("black_stones", blackStoneCount);
+            
+            // Store the specific non-virtue selected (for future detailed tracking)
+            var nonVirtueKey = "nonvirtue_" + selectedVirtueIndex;
+            var nonVirtueCount = Storage.getValue(nonVirtueKey);
+            if (nonVirtueCount == null) {
+                nonVirtueCount = 0;
+            }
+            nonVirtueCount++;
+            Storage.setValue(nonVirtueKey, nonVirtueCount);
+            
             currentState = MAIN_SCREEN;
         }
         WatchUi.requestUpdate();
@@ -124,20 +232,36 @@ class StoneLoggerView extends WatchUi.View {
     function onUpPressed() {
         if (currentState == STONE_SELECTION) {
             selectedOption = 0; // Select white
-            WatchUi.requestUpdate();
+        } else if (currentState == VIRTUE_SELECTION || currentState == NON_VIRTUE_SELECTION) {
+            // Navigate up through the list
+            selectedVirtueIndex--;
+            if (selectedVirtueIndex < 0) {
+                selectedVirtueIndex = 9; // Wrap to bottom
+            }
         }
+        WatchUi.requestUpdate();
     }
     
     function onDownPressed() {
         if (currentState == STONE_SELECTION) {
             selectedOption = 1; // Select black
-            WatchUi.requestUpdate();
+        } else if (currentState == VIRTUE_SELECTION || currentState == NON_VIRTUE_SELECTION) {
+            // Navigate down through the list
+            selectedVirtueIndex++;
+            if (selectedVirtueIndex > 9) {
+                selectedVirtueIndex = 0; // Wrap to top
+            }
         }
+        WatchUi.requestUpdate();
     }
     
     function onBackPressed() {
         if (currentState == STONE_SELECTION) {
             currentState = MAIN_SCREEN;
+            WatchUi.requestUpdate();
+            return true; // Handled
+        } else if (currentState == VIRTUE_SELECTION || currentState == NON_VIRTUE_SELECTION) {
+            currentState = STONE_SELECTION;
             WatchUi.requestUpdate();
             return true; // Handled
         }
