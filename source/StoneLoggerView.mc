@@ -344,6 +344,7 @@ class StoneLoggerView extends WatchUi.View {
         var screenWidth = dc.getWidth();
         var screenHeight = dc.getHeight();
         var centerX = screenWidth / 2;
+        var centerY = screenHeight / 2;
         
         // Get historical dates
         var historicalDates = Storage.getValue("historical_dates");
