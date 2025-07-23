@@ -1,4 +1,5 @@
 using Toybox.Application;
+using Toybox.WatchUi;
 
 // This is the primary entry point of the application.
 class Wf01 extends Application.AppBase
@@ -12,7 +13,10 @@ class Wf01 extends Application.AppBase
 
     function onStop(state) {
     }
+    
     function getInitialView() {
-        return [new Wf01View()];
+        var view = new StoneLoggerView();
+        var delegate = new StoneLoggerDelegate(view);
+        return [view, delegate];
     }
 }
