@@ -353,7 +353,7 @@ class Wf01View extends WatchUi.WatchFace
     }
 
     function onLayout(dc) {
-        font = WatchUi.loadResource(Rez.Fonts.id_font_time);
+        font = Graphics.FONT_NUMBER_HOT;
 
         offscreenBuffer = new Graphics.BufferedBitmap({
                 :width=>dc.getWidth(),

@@ -1,0 +1,13 @@
+# Build artifacts
+*.prg
+*.prg.debug.xml
+gen/
+external-mir/
+internal-mir/
+
+# Developer keys (sensitive)
+developer_key.der
+developer_key.pem
+
+# OS files
+.DS_Store
