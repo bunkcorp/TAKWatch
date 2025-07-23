@@ -87,17 +87,43 @@ class StoneLoggerView extends WatchUi.View {
         var centerX = screenWidth / 2;
         var centerY = screenHeight / 2;
         
-        // Title
+        // Background gradient effect (simulate with rectangles)
+        dc.setColor(0x001122, Graphics.COLOR_TRANSPARENT);
+        dc.fillRectangle(0, 0, screenWidth, screenHeight / 3);
+        dc.setColor(0x000011, Graphics.COLOR_TRANSPARENT);
+        dc.fillRectangle(0, screenHeight / 3, screenWidth, screenHeight / 3);
+        
+        // Title with accent color
+        dc.setColor(Graphics.COLOR_YELLOW, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(centerX, 25, Graphics.FONT_MEDIUM, "GettingStoned", Graphics.TEXT_JUSTIFY_CENTER);
+        
+        // Decorative divider line
+        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.fillRectangle(centerX - 50, 50, 100, 1);
+        
+        // White stones section with colored background
+        dc.setColor(0x003300, Graphics.COLOR_TRANSPARENT);
+        dc.fillRoundedRectangle(centerX - 70, centerY - 60, 140, 35, 5);
+        dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(centerX, centerY - 50, Graphics.FONT_SMALL, "Virtues", Graphics.TEXT_JUSTIFY_CENTER);
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(centerX, 30, Graphics.FONT_MEDIUM, "Stone Logger", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX, centerY - 30, Graphics.FONT_LARGE, whiteStoneCount.toString(), Graphics.TEXT_JUSTIFY_CENTER);
         
-        // White stone count
-        dc.drawText(centerX, centerY - 50, Graphics.FONT_SMALL, "White Stones:", Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(centerX, centerY - 25, Graphics.FONT_MEDIUM, whiteStoneCount.toString(), Graphics.TEXT_JUSTIFY_CENTER);
+        // Separator
+        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.fillRectangle(centerX - 30, centerY - 10, 60, 1);
         
-        // Black stone count  
-        dc.drawText(centerX, centerY + 5, Graphics.FONT_SMALL, "Black Stones:", Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(centerX, centerY + 30, Graphics.FONT_MEDIUM, blackStoneCount.toString(), Graphics.TEXT_JUSTIFY_CENTER);
+        // Black stones section with colored background
+        dc.setColor(0x330000, Graphics.COLOR_TRANSPARENT);
+        dc.fillRoundedRectangle(centerX - 70, centerY + 5, 140, 35, 5);
+        dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(centerX, centerY + 15, Graphics.FONT_SMALL, "Non-Virtues", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(centerX, centerY + 35, Graphics.FONT_LARGE, blackStoneCount.toString(), Graphics.TEXT_JUSTIFY_CENTER);
+        
+        // Bottom accent bar
+        dc.setColor(Graphics.COLOR_YELLOW, Graphics.COLOR_TRANSPARENT);
+        dc.fillRectangle(0, screenHeight - 5, screenWidth, 5);
         
     }
     
@@ -142,12 +168,38 @@ class StoneLoggerView extends WatchUi.View {
         // Title
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
         dc.drawText(centerX, 15, Graphics.FONT_SMALL, "Select Virtue", Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(centerX, 40, Graphics.FONT_TINY, "(" + (selectedVirtueIndex + 1) + " of 10)", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX, 35, Graphics.FONT_TINY, "(" + (selectedVirtueIndex + 1) + " of 10)", Graphics.TEXT_JUSTIFY_CENTER);
         
-        // Current virtue (highlighted)
-        dc.setColor(Graphics.COLOR_BLUE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(centerX, centerY - 10, Graphics.FONT_MEDIUM, "> " + virtues[selectedVirtueIndex] + " <", Graphics.TEXT_JUSTIFY_CENTER);
+        // Show all 10 virtues
+        var startY = 50;
+        var lineHeight = 14;
         
+        for (var i = 0; i < 10; i++) {
+            var yPos = startY + i * lineHeight;
+            
+            // Determine color based on virtue group
+            var virtueColor;
+            if (i >= 0 && i <= 2) {
+                // Group 1: Insight, Love, Content (indices 0-2)
+                virtueColor = Graphics.COLOR_BLUE;
+            } else if (i >= 3 && i <= 6) {
+                // Group 2: Meaning, Kindness, Harmony, Truth (indices 3-6)
+                virtueColor = Graphics.COLOR_GREEN;
+            } else {
+                // Group 3: Conduct, Give, Protect (indices 7-9)
+                virtueColor = Graphics.COLOR_YELLOW;
+            }
+            
+            dc.setColor(virtueColor, Graphics.COLOR_TRANSPARENT);
+            
+            if (i == selectedVirtueIndex) {
+                // Current selection (highlighted with brackets)
+                dc.drawText(centerX, yPos, Graphics.FONT_TINY, "> " + virtues[i] + " <", Graphics.TEXT_JUSTIFY_CENTER);
+            } else {
+                // Other options
+                dc.drawText(centerX, yPos, Graphics.FONT_TINY, virtues[i], Graphics.TEXT_JUSTIFY_CENTER);
+            }
+        }
     }
     
     function drawNonVirtueSelectionScreen(dc) {
@@ -159,12 +211,38 @@ class StoneLoggerView extends WatchUi.View {
         // Title
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
         dc.drawText(centerX, 15, Graphics.FONT_TINY, "Select Non-Virtue", Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(centerX, 40, Graphics.FONT_TINY, "(" + (selectedVirtueIndex + 1) + " of 10)", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(centerX, 35, Graphics.FONT_TINY, "(" + (selectedVirtueIndex + 1) + " of 10)", Graphics.TEXT_JUSTIFY_CENTER);
         
-        // Current non-virtue (highlighted)
-        dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(centerX, centerY - 10, Graphics.FONT_MEDIUM, "> " + nonVirtues[selectedVirtueIndex] + " <", Graphics.TEXT_JUSTIFY_CENTER);
+        // Show all 10 non-virtues
+        var startY = 50;
+        var lineHeight = 14;
         
+        for (var i = 0; i < 10; i++) {
+            var yPos = startY + i * lineHeight;
+            
+            // Determine color based on non-virtue group
+            var nonVirtueColor;
+            if (i >= 0 && i <= 2) {
+                // Group 1: Error, Ill Will, Covet (indices 0-2) - Mental/Emotional
+                nonVirtueColor = Graphics.COLOR_RED;
+            } else if (i >= 3 && i <= 6) {
+                // Group 2: Idle, Harsh, Divide, Lie (indices 3-6) - Speech
+                nonVirtueColor = Graphics.COLOR_ORANGE;
+            } else {
+                // Group 3: Lust, Steal, Kill (indices 7-9) - Physical Actions
+                nonVirtueColor = Graphics.COLOR_PURPLE;
+            }
+            
+            dc.setColor(nonVirtueColor, Graphics.COLOR_TRANSPARENT);
+            
+            if (i == selectedVirtueIndex) {
+                // Current selection (highlighted with brackets)
+                dc.drawText(centerX, yPos, Graphics.FONT_TINY, "> " + nonVirtues[i] + " <", Graphics.TEXT_JUSTIFY_CENTER);
+            } else {
+                // Other options
+                dc.drawText(centerX, yPos, Graphics.FONT_TINY, nonVirtues[i], Graphics.TEXT_JUSTIFY_CENTER);
+            }
+        }
     }
     
     function onStartPressed() {
